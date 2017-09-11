@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "connect-multiparty": "^2.0.0"
+  }
+}
