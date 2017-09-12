@@ -1,5 +1,6 @@
 var mongoose = require('mongoose'),
     DB_URL = 'mongodb://localhost:27017/wuhao';
+mongoose.Promise = Promise;
 
 /**
  * 连接

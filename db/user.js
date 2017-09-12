@@ -3,7 +3,9 @@ var mongoose = require('./db.js'),
 var UserSchema=new  Schema({
     username:{type:String},
     userpwd:{type:String},
-    userage:{type:Number},
+    email:{type:String},
+    hash:{type:String},
+    activeStatus:{type:Boolean},
     logindate:{type:Date}
 })
 module.exports=mongoose.model('User',UserSchema);

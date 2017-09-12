@@ -4,8 +4,11 @@ var app = express();
 /*var multipart = require('connect-multiparty');
 var multipartMiddleware = multipart();*/
 var querystring = require('querystring');
+var crypto=require('crypto');
 var User = require('./db/user.js')
 var Article = require('./db/article.js')
+var send = require('./email/email.js');
+var Hash = require('./db/hashcode.js')
 app.all('*', function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept");
@@ -155,6 +158,86 @@ app.post('/getArticleList', function (req, res) {
         })
     })
 })
+// 发送激活邮件
+app.post('/activeEmail', function (req, res) {
+    var alldata = '';
+    req.on('data', function (chunk) {
+        alldata += chunk;
+    })
+    req.on('end', function () {
+        var jsonAlldata = JSON.parse(alldata)
+        console.log("active",jsonAlldata)
+        var url="https://api.only1314.cn/sureActiveEmail?token="+jsonAlldata.hash+"&username="+jsonAlldata.username;
+        var mailOptions = {
+            from: 'ONLY1314 <admin@only1314.cn>', // 如果不加<xxx@xxx.com> 会报语法错误
+            to: jsonAlldata.email, // list of receivers
+            subject: '请点击链接激活您的邮箱~', // Subject line
+            html: '<a href='+url+'>点我激活您的邮箱'+url+'</a>'// html body
+        };
+        console.log(mailOptions)
+        send(mailOptions);
+         return res.json(toJSON({}, '邮件发送成功', '200', '0'))
+    })
+})
+// 确定激活
+app.get('/sureActiveEmail', function (req, res) {
+    var wherestr = {'username': req.query.username};
+    User.find(wherestr, function (err, ress) {
+        if (err) {
+            console.log("Error:" + err);
+        }
+        else {
+            console.log("返回", ress)
+            if (ress != '' && ress[0].hash == req.query.token) {
+                console.log("找到了")
+                User.update({'username':req.query.username}, {'activeStatus':true}, function(err, resss){
+                    if (err) {
+                        console.log("Error:" + err);
+                    }
+                    else {
+                        console.log("Res:" + resss);
+                        res.redirect('https://only1314.cn');
+                    }
+                })
+
+            } else {
+                console.log('没找到')
+                return res.json(toJSON({}, 'token错误', '-1', '1'))
+            }
+        }
+    })
+    /*console.log("/del_user 响应 DELETE 请求");
+    res.send('删除页面');*/
+})
+// 是否成功激活
+app.post('/isActiveSuccess', function (req, res) {
+    var alldata = '';
+    req.on('data', function (chunk) {
+        alldata += chunk;
+    })
+    req.on('end', function () {
+        var jsonAlldata = JSON.parse(alldata)
+        console.log("active",jsonAlldata)
+        var wherestr = {'username': jsonAlldata.username};
+        User.find(wherestr, function (err, ress) {
+            if (err) {
+                console.log("Error:" + err);
+            }
+            else {
+                console.log("返回", ress)
+                if (ress != '' && ress[0].activeStatus == false) {
+                    console.log("未激活")
+                    res.json(toJSON({}, '未激活', '-1', '1'))
+
+                } else {
+                    console.log('没找到')
+                    return res.json(toJSON({}, '已激活', '200', '0'))
+                }
+            }
+        })
+
+    })
+})
 // 注册
 app.post('/regist', function (req, res) {
     var alldata = '';
@@ -162,26 +245,49 @@ app.post('/regist', function (req, res) {
         alldata += chunk;
     })
     req.on('end', function () {
-        console.log(alldata);
-        console.log(typeof alldata)
+       /* console.log(alldata);
+        console.log(typeof alldata)*/
         var jsonAlldata = JSON.parse(alldata)
-        console.log(typeof  jsonAlldata)
-        console.log(jsonAlldata)
-        var user = new User({
+       /* console.log(typeof  jsonAlldata)*/
+       /* console.log(jsonAlldata)*/
+        const hmac = crypto.createHmac('sha256', 'signup')
+        hmac.update(jsonAlldata.email + Date.now())
+        const hashcode = hmac.digest('hex')
+        var data={
             username: jsonAlldata.username,
             userpwd: jsonAlldata.password,
-            userage: 24,
+            email:jsonAlldata.email,
+            hash:hashcode,
+            activeStatus:false,
             logindate: new Date()
-        })
-        user.save(function (err, res) {
+        }
+        console.log(data)
+        var user = new User(data)
+        user.save(function (err, ress) {
             if (err) {
                 console.log("Error")
             } else {
-                console.log("yew")
+
+               /* var hash=new Hash({
+                    hash: hashcode,
+                    createAt: Date.now()
+                })
+                console.log(hashcode)
+                hash.save(function (err,res) {
+                    if(err){
+                        console.log('hashERROR')
+                    }else{
+                        console.log("save sucsedd hash")
+                    }
+                })*/
+
+                console.log("ress",ress)
+                return res.json(toJSON(ress, '成功', '200', '0'))
+
             }
         })
-        res.write(alldata)
-        res.end();
+        /*res.write(alldata)
+        res.end();*/
     })
 })
 // 登陆

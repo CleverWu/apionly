@@ -1,5 +1,8 @@
 {
   "dependencies": {
-    "connect-multiparty": "^2.0.0"
+    "body-parser": "^1.18.0",
+    "connect-multiparty": "^2.0.0",
+    "crypto": "^1.0.1",
+    "nodemailer": "^4.1.0"
   }
 }
