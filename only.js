@@ -8,7 +8,7 @@ var crypto=require('crypto');
 var User = require('./db/user.js')
 var Article = require('./db/article.js')
 var send = require('./email/email.js');
-var Hash = require('./db/hashcode.js')
+/*var Hash = require('./db/hashcode.js')*/
 app.all('*', function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Headers", "X-Requested-With, X-HTTP-Method-Override, Content-Type, Accept");
@@ -85,7 +85,7 @@ app.post('/publish', function (req, res) {
                 replyNums:0,
                 likeNums:0,
                 remark:jsonAlldata.remark||'',
-                comments:[],
+                comments:[]
             }
             console.log(newData)
             var article = new Article(newData)
@@ -102,10 +102,10 @@ app.post('/publish', function (req, res) {
                 var dataBuffer = new Buffer(base64, 'base64'); //把base64码转成buffer对象
                 var date = new Date();
                 var filename = String(date.getFullYear()) + String(date.getMonth() + 1) + String(date.getDate());
-              /*  var path = '../usr/share/nginx/html/upload/images/' + filename + '/';
-                var imgSrc = '../usr/share/nginx/html/upload/images/' + filename + '/' + Date.parse(date) + i + '.png'*/
-                  var path = './img/' + filename + '/';
-                 var imgSrc = './img/' + filename + '/' + Date.parse(date) + i + '.png'
+                var path = '../usr/share/nginx/html/upload/images/' + filename + '/';
+                var imgSrc = '../usr/share/nginx/html/upload/images/' + filename + '/' + Date.parse(date) + i + '.png'
+                /*  var path = './img/' + filename + '/';
+                 var imgSrc = './img/' + filename + '/' + Date.parse(date) + i + '.png'*/
 
                 var imgname = String(Date.parse(date)) +String(i) + '.png';
                 try {
@@ -144,7 +144,12 @@ function writeToFile(i, imgSrc,imgname,filename, dataBuffer, jsonAlldata, res) {
             region: jsonAlldata.region,
             desc: jsonAlldata.desc,
             picArr: jsonAlldata.picArr,
-            publishdate: new Date()
+            publishdate: new Date(),
+            replyNums:0,
+            likeNums:0,
+            remark:jsonAlldata.remark||'',
+            comments:[]
+
         }
         console.log(newData)
         var article = new Article(newData)

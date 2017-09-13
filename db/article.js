@@ -1,4 +1,4 @@
-var mongoose = require('./db.js'),
+﻿var mongoose = require('./db.js'),
     Schema=mongoose.Schema;
 var ArticleSchema=new Schema(
     {
@@ -10,7 +10,7 @@ var ArticleSchema=new Schema(
         region: {type: String},
         desc: {type: String},
         picArr:{type:Array},
-        publishdate: {type: String},
+        publishdate: {type: Date},
         // 新增
         replyNums:{type:Number},
         likeNums:{type:Number},
