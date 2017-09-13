@@ -3,7 +3,7 @@ var mailer = require('nodemailer');
 var smtpTransport = require('nodemailer-smtp-transport');
 var transport = mailer.createTransport(smtpTransport({
     host: 'smtp.only1314.cn',
-    port: 25,
+    port: 465,
     auth: {
         user: 'admin@only1314.cn',
         pass: '15386616570W.h'

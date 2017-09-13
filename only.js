@@ -42,7 +42,28 @@ app.get('/del_user', function (req, res) {
 function creatPath() {
 
 }
-//  /发布
+Date.prototype.format = function(fmt) {
+    var o = {
+        "M+" : this.getMonth()+1,                 //月份
+        "d+" : this.getDate(),                    //日
+        "h+" : this.getHours(),                   //小时
+        "m+" : this.getMinutes(),                 //分
+        "s+" : this.getSeconds(),                 //秒
+        "q+" : Math.floor((this.getMonth()+3)/3), //季度
+        "S"  : this.getMilliseconds()             //毫秒
+    };
+    if(/(y+)/.test(fmt)) {
+        fmt=fmt.replace(RegExp.$1, (this.getFullYear()+"").substr(4 - RegExp.$1.length));
+    }
+    for(var k in o) {
+        if(new RegExp("("+ k +")").test(fmt)){
+            fmt = fmt.replace(RegExp.$1, (RegExp.$1.length==1) ? (o[k]) : (("00"+ o[k]).substr((""+ o[k]).length)));
+        }
+    }
+    return fmt;
+}
+
+//  /发布----------------------------------------------发布前修改路径
 app.post('/publish', function (req, res) {
     var alldata = '';
     req.on('data', function (chunk) {
@@ -60,7 +81,11 @@ app.post('/publish', function (req, res) {
                 region: jsonAlldata.region,
                 desc: jsonAlldata.desc,
                 picArr: jsonAlldata.picArr,
-                publishdate: new Date()
+                publishdate: new Date(),
+                replyNums:0,
+                likeNums:0,
+                remark:jsonAlldata.remark||'',
+                comments:[],
             }
             console.log(newData)
             var article = new Article(newData)
@@ -77,8 +102,11 @@ app.post('/publish', function (req, res) {
                 var dataBuffer = new Buffer(base64, 'base64'); //把base64码转成buffer对象
                 var date = new Date();
                 var filename = String(date.getFullYear()) + String(date.getMonth() + 1) + String(date.getDate());
-                var path = '../usr/share/nginx/html/upload/images/' + filename + '/';
-                var imgSrc = '../usr/share/nginx/html/upload/images/' + filename + '/' + Date.parse(date) + i + '.png'
+              /*  var path = '../usr/share/nginx/html/upload/images/' + filename + '/';
+                var imgSrc = '../usr/share/nginx/html/upload/images/' + filename + '/' + Date.parse(date) + i + '.png'*/
+                  var path = './img/' + filename + '/';
+                 var imgSrc = './img/' + filename + '/' + Date.parse(date) + i + '.png'
+
                 var imgname = String(Date.parse(date)) +String(i) + '.png';
                 try {
                     writeToFile(i, imgSrc,imgname,filename,dataBuffer, jsonAlldata, res)
@@ -314,6 +342,107 @@ app.post('/login', function (req, res) {
                 }
             }
         })
+    })
+})
+app.post('/z_reply',function (req,res) {
+    var alldata = '';
+    req.on('data', function (chunk) {
+        alldata += chunk;
+    })
+    req.on('end',function () {
+        var jsonAlldata = JSON.parse(alldata)
+        console.log(jsonAlldata)
+        var newReply={name:jsonAlldata.userName,userPhoto:jsonAlldata.userPhoto,text:jsonAlldata.text,commentdate:new Date(),subComment:[]}
+        var wherestr = {'_id': jsonAlldata.articleId};
+        Article.find(wherestr, function (err, ress) {
+            if (err) {
+                console.log("Error:" + err);
+            }
+            else {
+                console.log("返回", ress)
+                if (ress != '') {
+                    console.log("找到了")
+                    Article.update({'_id':jsonAlldata.articleId}, {$push:{comments:newReply}}, function(err, resss){
+                        if (err) {
+                            console.log("Error:" + err);
+                        }
+                        else {
+                            console.log("Res:" + resss);
+                            console.log("更新成功")
+                            Article.find(wherestr,function (err,finnal) {
+                                if(err){
+                                    console.log("错误")
+                                }else{
+                                    var data={
+                                        all:finnal,
+                                        thisArticle:newReply
+                                    }
+                                    return res.json(toJSON(data, '回复成功', '200', '0'))
+                                }
+                            })
+
+                        }
+                    })
+
+                } else {
+                    console.log('没找到')
+                    return res.json(toJSON({}, 'token错误', '-1', '1'))
+                }
+            }
+        })
+        /*var data=[{name:'wuhao',commentdate:'2017-10-10',tetx:'dswdwd',subComment:[{name:'',commentdata:'2016',text:'23232'}]}]*/
+    })
+})
+app.post('/s_reply',function (req,res) {
+    var alldata = '';
+    req.on('data', function (chunk) {
+        alldata += chunk;
+    })
+    req.on('end',function () {
+        var jsonAlldata = JSON.parse(alldata)
+        console.log(jsonAlldata)
+        var index=jsonAlldata.index;
+        var newReply={name:jsonAlldata.userName,userPhoto:jsonAlldata.userPhoto,text:jsonAlldata.text,commentdate:new Date()}
+        var wherestr = {'_id': jsonAlldata.articleId};
+        Article.find(wherestr, function (err, ress) {
+            if (err) {
+                console.log("Error:" + err);
+            }
+            else {
+                console.log("返回", ress)
+                if (ress != '') {
+                    ress[0].comments[index].subComment.push(newReply)
+                    /*console.log("新",ress[0].comments[index])
+                    console.log("找到了")*/
+                    Article.update({'_id':jsonAlldata.articleId}, {comments:ress[0].comments}, function(err, resss){
+                        if (err) {
+                            console.log("Error:" + err);
+                        }
+                        else {
+                            console.log("Res:" + resss);
+                            console.log("更新成功")
+                            Article.find(wherestr,function (err,finnal) {
+                                if(err){
+                                    console.log("错误")
+                                }else{
+                                    var data={
+                                        all:finnal,
+                                        thisArticle:newReply
+                                    }
+                                    return res.json(toJSON(data, '回复成功', '200', '0'))
+                                }
+                            })
+
+                        }
+                    })
+
+                } else {
+                    console.log('没找到')
+                    return res.json(toJSON({}, 'token错误', '-1', '1'))
+                }
+            }
+        })
+        /*var data=[{name:'wuhao',commentdate:'2017-10-10',tetx:'dswdwd',subComment:[{name:'',commentdata:'2016',text:'23232'}]}]*/
     })
 })
 // 文件上传

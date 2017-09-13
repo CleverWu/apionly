@@ -10,7 +10,13 @@ var ArticleSchema=new Schema(
         region: {type: String},
         desc: {type: String},
         picArr:{type:Array},
-        publishdate: {type: Date}
+        publishdate: {type: String},
+        // 新增
+        replyNums:{type:Number},
+        likeNums:{type:Number},
+        remark:{type:String},
+        comments:{type:Array}
+
     }
 )
 module.exports=mongoose.model('Article',ArticleSchema);
