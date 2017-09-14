@@ -93,7 +93,7 @@ app.post('/excelArticle', function (req, res) {
          fs.renameSync(files.Filedata.path, newPath);  //重命名
          console.log('重命名成功！');
          //对excel文件进行解析读取数据
-         var newPath = path + files.Filedata.name;
+        /* var newPath = path + files.Filedata.name;*/
          ExcelParse(newPath,fields.username,fields.userId,res);
     })
 })

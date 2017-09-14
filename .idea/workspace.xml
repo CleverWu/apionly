@@ -3,6 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="1cd590f0-500c-40fa-8065-aa5118a4f087" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/only.js" afterPath="$PROJECT_DIR$/only.js" />
     </list>
     <ignored path="apionly.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -28,19 +29,11 @@
       <file leaf-file-name="only.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/only.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="419">
-              <caret line="140" column="32" selection-start-line="140" selection-start-column="32" selection-end-line="140" selection-end-column="32" />
+            <state relative-caret-position="440">
+              <caret line="94" column="27" selection-start-line="94" selection-start-column="27" selection-end-line="94" selection-end-column="27" />
               <folding>
                 <element signature="n#!!block;n#toJSON#0" expanded="false" />
-                <element signature="e#1347#2094#0" expanded="false" />
-                <element signature="e#6009#6979#0" expanded="false" />
-                <element signature="e#7036#7789#0" expanded="false" />
-                <element signature="e#7847#8788#0" expanded="false" />
-                <element signature="e#8849#9664#0" expanded="false" />
-                <element signature="e#9712#11235#0" expanded="false" />
-                <element signature="e#11282#12079#0" expanded="false" />
-                <element signature="e#12120#14084#0" expanded="false" />
-                <element signature="e#14125#16247#0" expanded="false" />
+                <element signature="e#3694#6073#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -50,7 +43,7 @@
         <entry file="file://$PROJECT_DIR$/db/article.js">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="286">
-              <caret line="13" column="8" selection-start-line="13" selection-start-column="8" selection-end-line="13" selection-end-column="13" />
+              <caret line="15" column="8" selection-start-line="14" selection-start-column="8" selection-end-line="14" selection-end-column="13" />
               <folding />
             </state>
           </provider>
@@ -74,8 +67,8 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/only.js" />
         <option value="$PROJECT_DIR$/db/article.js" />
+        <option value="$PROJECT_DIR$/only.js" />
       </list>
     </option>
   </component>
@@ -91,8 +84,9 @@
   </component>
   <component name="ProjectFrameBounds">
     <option name="x" value="-9" />
+    <option name="y" value="-9" />
     <option name="width" value="1932" />
-    <option name="height" value="1050" />
+    <option name="height" value="1048" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="false">
     <OptionsSetting value="true" id="Add" />
@@ -230,21 +224,30 @@
       <option name="presentableId" value="Default" />
       <updated>1505310444712</updated>
       <workItem from="1505310446033" duration="3298000" />
-      <workItem from="1505316306414" duration="209000" />
+      <workItem from="1505316306414" duration="886000" />
+      <workItem from="1505400300983" duration="853000" />
     </task>
+    <task id="LOCAL-00001" summary="1">
+      <created>1505316522124</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1505316522124</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="3507000" />
+    <option name="totallyTimeSpent" value="5037000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="-9" y="0" width="1932" height="1050" extended-state="0" />
-    <editor active="false" />
+    <frame x="-9" y="-9" width="1932" height="1048" extended-state="0" />
+    <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24973877" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.24869384" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
-      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.32968238" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32968238" sideWeight="0.18495297" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.33040616" sideWeight="0.815047" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
@@ -270,6 +273,10 @@
   <component name="VcsContentAnnotationSettings">
     <option name="myLimit" value="2678400000" />
   </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="1" />
+    <option name="LAST_COMMIT_MESSAGE" value="1" />
+  </component>
   <component name="XDebuggerManager">
     <breakpoint-manager />
     <watches-manager />
@@ -281,15 +288,34 @@
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="n#!!block;n#toJSON#0" expanded="false" />
-            <element signature="e#1347#2094#0" expanded="false" />
-            <element signature="e#6009#6979#0" expanded="false" />
-            <element signature="e#7036#7789#0" expanded="false" />
-            <element signature="e#7847#8788#0" expanded="false" />
-            <element signature="e#8849#9664#0" expanded="false" />
-            <element signature="e#9712#11235#0" expanded="false" />
-            <element signature="e#11282#12079#0" expanded="false" />
-            <element signature="e#12120#14084#0" expanded="false" />
-            <element signature="e#14125#16247#0" expanded="false" />
+            <element signature="e#3694#6073#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/db/article.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="286">
+          <caret line="13" column="8" selection-start-line="13" selection-start-column="8" selection-end-line="13" selection-end-column="13" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/db/hashcode.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="44">
+          <caret line="2" column="19" selection-start-line="2" selection-start-column="19" selection-end-line="2" selection-end-column="19" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/only.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding>
+            <element signature="n#!!block;n#toJSON#0" expanded="false" />
+            <element signature="e#3694#6073#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -321,26 +347,18 @@
     <entry file="file://$PROJECT_DIR$/db/article.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="286">
-          <caret line="13" column="8" selection-start-line="13" selection-start-column="8" selection-end-line="13" selection-end-column="13" />
+          <caret line="15" column="8" selection-start-line="14" selection-start-column="8" selection-end-line="14" selection-end-column="13" />
           <folding />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/only.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="419">
-          <caret line="140" column="32" selection-start-line="140" selection-start-column="32" selection-end-line="140" selection-end-column="32" />
+        <state relative-caret-position="440">
+          <caret line="94" column="27" selection-start-line="94" selection-start-column="27" selection-end-line="94" selection-end-column="27" />
           <folding>
             <element signature="n#!!block;n#toJSON#0" expanded="false" />
-            <element signature="e#1347#2094#0" expanded="false" />
-            <element signature="e#6009#6979#0" expanded="false" />
-            <element signature="e#7036#7789#0" expanded="false" />
-            <element signature="e#7847#8788#0" expanded="false" />
-            <element signature="e#8849#9664#0" expanded="false" />
-            <element signature="e#9712#11235#0" expanded="false" />
-            <element signature="e#11282#12079#0" expanded="false" />
-            <element signature="e#12120#14084#0" expanded="false" />
-            <element signature="e#14125#16247#0" expanded="false" />
+            <element signature="e#3694#6073#0" expanded="false" />
           </folding>
         </state>
       </provider>
