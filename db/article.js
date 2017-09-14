@@ -7,6 +7,7 @@ var ArticleSchema=new Schema(
         date1: {type: Date},
         date2: {type: Date},
         companyName: {type: String},
+        address: {type: String},
         region: {type: String},
         desc: {type: String},
         picArr:{type:Array},
