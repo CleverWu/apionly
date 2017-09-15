@@ -67,7 +67,7 @@ var ExcelParse = function (newPath,username,userId,res) {
 // 批量导入文章=================发布需要修改路径
 app.post('/excelArticle', function (req, res) {
     var form = new formidable.IncomingForm();
-    form.uploadDir='./public/upload/article/';
+    form.uploadDir='../usr/share/nginx/html/upload/article/';
    /* var path='./public/upload/article/'*/
     var path='../usr/share/nginx/html/upload/article/'
     form.parse(req, function (err, fields, files) {
