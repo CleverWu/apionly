@@ -7,6 +7,7 @@ var querystring = require('querystring');
 var crypto = require('crypto');
 var User = require('./db/user.js')
 var Article = require('./db/article.js')
+var Comments = require('./db/comments.js')
 var send = require('./email/email.js');
 var formidable = require('formidable');
 var node_xlsx = require('node-xlsx');
@@ -23,6 +24,27 @@ app.all('*', function (req, res, next) {
 function toJSON(data = {}, message = '', status = '', code = '') {
     return {data, message, status, code}
 }
+function copyFile(oldPath,newPath){
+    console.log('--------开始读取文件--------');
+    fs.readFile(oldPath, function(err, data) {
+        if (err) {
+            console.log("读取失败");
+        } else {
+            fs.writeFile(newPath,data,function(error){
+                if(error){
+                    throw error;
+                }else{
+                    console.log("文件已保存");
+                }
+            });
+        }
+    });
+/*    readable = fs.createReadStream( oldPath );
+    // 创建写入流
+    writable = fs.createWriteStream( newPath );
+    readable.pipe( writable );*/
+}
+
 //  POST 请求
 app.post('/', function (req, res) {
     console.log("主页 POST 请求");
@@ -68,6 +90,7 @@ var ExcelParse = function (newPath,username,userId,res) {
 app.post('/excelArticle', function (req, res) {
     var form = new formidable.IncomingForm();
     form.uploadDir='../usr/share/nginx/html/upload/article/';
+    /*form.uploadDir='./public/upload/article/';*/
    /* var path='./public/upload/article/'*/
     var path='../usr/share/nginx/html/upload/article/'
     form.parse(req, function (err, fields, files) {
@@ -119,8 +142,8 @@ app.post('/publish', function (req, res) {
                 publishdate: new Date(),
                 replyNums: 0,
                 likeNums: 0,
-                remark: jsonAlldata.remark || '',
-                comments: []
+                remark: jsonAlldata.remark || ''
+               /* comments: []*/
             }
             console.log(newData)
             var article = new Article(newData)
@@ -137,8 +160,8 @@ app.post('/publish', function (req, res) {
                 var dataBuffer = new Buffer(base64, 'base64'); //把base64码转成buffer对象
                 var date = new Date();
                 var filename = String(date.getFullYear()) + String(date.getMonth() + 1) + String(date.getDate());
-                 var path = '../usr/share/nginx/html/upload/images/' + filename + '/';
-                 var imgSrc = '../usr/share/nginx/html/upload/images/' + filename + '/' + Date.parse(date) + i + '.png'
+                 var path = '../usr/share/nginx/html/images/Article/' + filename + '/';
+                 var imgSrc = '../usr/share/nginx/html/images/Article/' + filename + '/' + Date.parse(date) + i + '.png'
                /* var path = './img/' + filename + '/';
                 var imgSrc = './img/' + filename + '/' + Date.parse(date) + i + '.png'*/
 
@@ -169,9 +192,9 @@ app.post('/userCenter',function (req,res) {
             var dataBuffer = new Buffer(base64, 'base64'); //把base64码转成buffer对象
             var date = new Date();
             var filename = String(date.getFullYear()) + String(date.getMonth() + 1) + String(date.getDate());
-             var path = '../usr/share/nginx/html/upload/images/photo/' + filename + '/';
-             var imgSrc = '../usr/share/nginx/html/upload/images/photo/' + filename + '/' + Date.parse(date) + '.png'
-           /* var path = './img/photo/' + filename + '/';
+            var path = '../usr/share/nginx/html/upload/images/photo/' + filename + '/';
+            var imgSrc = '../usr/share/nginx/html/upload/images/photo/' + filename + '/' + Date.parse(date) + '.png'
+          /*  var path = './img/photo/' + filename + '/';
             var imgSrc = './img/photo/' + filename + '/' + Date.parse(date)+ '.png'*/
 
             var imgname = Date.parse(date) + '.png';
@@ -214,7 +237,7 @@ app.post('/userCenter',function (req,res) {
 })
 function writeToFile(i, imgSrc, imgname, filename, dataBuffer, jsonAlldata, res) {
     fs.writeFileSync(imgSrc, dataBuffer)
-    jsonAlldata.picArr[i] = 'https://only1314.cn/upload/images/' + filename + '/' + imgname;
+    jsonAlldata.picArr[i] = 'https://only1314.cn/images/Article' + filename + '/' + imgname;
     /*  var wherestr = {'_id' : _id};
      var updatestr = {'picArr': jsonAlldata.picArr};
      Article.update(wherestr, updatestr, function(err, resss){
@@ -240,8 +263,8 @@ function writeToFile(i, imgSrc, imgname, filename, dataBuffer, jsonAlldata, res)
             publishdate: new Date(),
             replyNums: 0,
             likeNums: 0,
-            remark: jsonAlldata.remark || '',
-            comments: []
+            remark: jsonAlldata.remark || ''
+           /* comments: []*/
 
         }
         console.log(newData)
@@ -294,11 +317,16 @@ app.post('/activeEmail', function (req, res) {
         var jsonAlldata = JSON.parse(alldata)
         console.log("active", jsonAlldata)
         var url = "https://api.only1314.cn/sureActiveEmail?token=" + jsonAlldata.hash + "&username=" + jsonAlldata.username;
+        var html='<div style="width: 100%;height: 300px;background: url(https://only1314.cn/static/images/email_bg.jpg) no-repeat center;background-size: cover;overflow: hidden;">'+
+            '<h1 style="text-align: center;margin: 20px;">来自ONLY1314的激活邮件</h1>'+
+            '<p style="text-align: center;color: #ffffff;margin-top: 75px;">感谢您注册并即将激活ONLY1314.cn的账号,本站将竭诚为您服务</p>'+
+            '<div><a style="text-align: center;display: block;color: #ff4163;font-weight: 600;text-decoration: none;" href="'+url+'">戳我激活邮箱（快来愉快的玩耍~）</a></div>'+
+        '</div>'
         var mailOptions = {
             from: 'ONLY1314 <admin@only1314.cn>', // 如果不加<xxx@xxx.com> 会报语法错误
             to: jsonAlldata.email, // list of receivers
             subject: '请点击链接激活您的邮箱~', // Subject line
-            html: '<a href=' + url + '>点我激活您的邮箱' + url + '</a>'// html body
+            html: html// html body
         };
         console.log(mailOptions)
         send(mailOptions);
@@ -322,7 +350,7 @@ app.get('/sureActiveEmail', function (req, res) {
                     }
                     else {
                         console.log("Res:" + resss);
-                        res.redirect('https://only1314.cn');
+                        res.redirect('https://only1314.cn/activeSuccess.html');
                     }
                 })
 
@@ -382,7 +410,7 @@ app.post('/regist', function (req, res) {
         var data = {
             username: jsonAlldata.username,
             userpwd: jsonAlldata.password,
-            userPhoto:'https://only1314.cn/static/images/photo.png',
+            userPhoto:'',
             email: jsonAlldata.email,
             hash: hashcode,
             activeStatus: false,
@@ -398,7 +426,6 @@ app.post('/regist', function (req, res) {
                 console.log("返回", ress)
                 if (ress != '') {
                     console.log("找到了")
-                    console.log('没找到')
                     return res.json(toJSON({}, '用户名已存在', '-1', '1'))
 
                 } else {
@@ -407,8 +434,20 @@ app.post('/regist', function (req, res) {
                         if (err) {
                             console.log("Error")
                         } else {
-                            console.log("ress", ress)
-                            return res.json(toJSON(ress, '成功', '200', '0'))
+                            var oldPath='../usr/share/nginx/html/static/images/photo.png';
+                            var date = Date.parse(new Date())
+                            fs.mkdirSync('../usr/share/nginx/html/images/User/'+ress._id+'/')
+                            var newPath='../usr/share/nginx/html/images/User/'+ress._id+'/'+ress._id+'_'+date+'.png'
+                            copyFile(oldPath,newPath)
+                            User.update({'_id': ress._id}, {'userPhoto':'https://only1314.cn/images/User/'+ress._id+'/'+ress._id+'_'+date+'.png'}, function (err, resss) {
+                                if (err) {
+                                    console.log("Error:" + err);
+                                }
+                                else {
+                                    ress.userPhoto='https://only1314.cn/images/User/'+ress._id+'/'+ress._id+'_'+date+'.png';
+                                    return res.json(toJSON(ress, '成功', '200', '0'))
+                                }
+                            })
                         }
                     })
 

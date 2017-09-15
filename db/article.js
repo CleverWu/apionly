@@ -15,8 +15,8 @@ var ArticleSchema=new Schema(
         // 新增
         replyNums:{type:Number},
         likeNums:{type:Number},
-        remark:{type:String},
-        comments:{type:Array}
+        remark:{type:String}
+       /* comments:{type:Array}*/
 
     }
 )
