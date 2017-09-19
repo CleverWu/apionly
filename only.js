@@ -44,7 +44,20 @@ function copyFile(oldPath,newPath){
     writable = fs.createWriteStream( newPath );
     readable.pipe( writable );*/
 }
-
+function compare(property){
+    return function(obj1,obj2){
+        var value1 = obj1[property];
+        var value2 = obj2[property];
+        return value1 - value2;     // 升序
+    }
+}
+function comparef(property){
+    return function(obj1,obj2){
+        var value1 = obj1[property];
+        var value2 = obj2[property];
+        return value2 - value1;     // 降序
+    }
+}
 //  POST 请求
 app.post('/', function (req, res) {
     console.log("主页 POST 请求");
@@ -188,45 +201,27 @@ app.post('/userCenter',function (req,res) {
         var jsonAlldata = JSON.parse(alldata);
         if(jsonAlldata.type=='switchPhoto'){
             var userPhoto=jsonAlldata.picArr[0];
+            var uid=jsonAlldata.uid;
+            var pic=jsonAlldata.pic;
             var base64 = userPhoto.replace(/^data:image\/\w+;base64,/, "");
             var dataBuffer = new Buffer(base64, 'base64'); //把base64码转成buffer对象
             var date = new Date();
             var filename = String(date.getFullYear()) + String(date.getMonth() + 1) + String(date.getDate());
-            var path = '../usr/share/nginx/html/upload/images/photo/' + filename + '/';
-            var imgSrc = '../usr/share/nginx/html/upload/images/photo/' + filename + '/' + Date.parse(date) + '.png'
+            var imgSrc = '../usr/share/nginx/html/'+pic;
           /*  var path = './img/photo/' + filename + '/';
             var imgSrc = './img/photo/' + filename + '/' + Date.parse(date)+ '.png'*/
-
-            var imgname = Date.parse(date) + '.png';
-            try {
-                fs.writeFileSync(imgSrc, dataBuffer)
-            } catch (err) {
-                fs.mkdirSync(path)
-                fs.writeFileSync(imgSrc, dataBuffer)
-            }
-            var wherestr = {'username': jsonAlldata.username};
-            User.find(wherestr, function (err, ress) {
+            fs.writeFileSync(imgSrc, dataBuffer)
+            var findUser={'_id':uid}
+            User.find(findUser, function (err, res_user) {
                 if (err) {
                     console.log("Error:" + err);
                 }
                 else {
-                    console.log("返回", ress)
-                    if (ress != '') {
-                        console.log("找到了")
-                        User.update({'username': jsonAlldata.username}, {'userPhoto': 'https://only1314.cn/upload/images/photo/'+filename + '/' + imgname}, function (err, resss) {
-                            if (err) {
-                                console.log("Error:" + err);
-                            }
-                            else {
-                                console.log("Res:" + resss);
-                                ress[0].userPhoto='https://only1314.cn/upload/images/photo/'+filename + '/' + imgname;
-                                return res.json(toJSON(ress[0], '头像更新成功', '200', '0'))
-                            }
-                        })
-
+                    if (res_user != '') {
+                        return res.json(toJSON(res_user[0], '成功', '200', '0'))
                     } else {
                         console.log('没找到')
-                        return res.json(toJSON({}, 'token错误', '-1', '1'))
+                        return res.json(toJSON({}, '用户不存在', '-1', '1'))
                     }
                 }
             })
@@ -237,7 +232,7 @@ app.post('/userCenter',function (req,res) {
 })
 function writeToFile(i, imgSrc, imgname, filename, dataBuffer, jsonAlldata, res) {
     fs.writeFileSync(imgSrc, dataBuffer)
-    jsonAlldata.picArr[i] = 'https://only1314.cn/images/Article' + filename + '/' + imgname;
+    jsonAlldata.picArr[i] = 'https://only1314.cn/images/Article/' + filename + '/' + imgname;
     /*  var wherestr = {'_id' : _id};
      var updatestr = {'picArr': jsonAlldata.picArr};
      Article.update(wherestr, updatestr, function(err, resss){
@@ -295,13 +290,261 @@ app.post('/getArticleList', function (req, res) {
                 console.log("Error:" + err);
             }
             else {
-                console.log("返回", ress)
+                var ress=ress;
                 if (ress != '') {
-                    console.log("找到了")
-                    return res.json(toJSON(ress, '成功', '200', '0'))
+                    var total=1
+                    var articles=[];
+                    for(let i=0;i<ress.length;i++){
+                        var findUser={'_id':ress[i].userId}
+                        User.find(findUser, function (err, res_user) {
+                            if (err) {
+                                console.log("Error:" + err);
+                            }
+                            else {
+
+                                var data={
+                                    address:ress[i].address,
+                                    author:ress[i].username,
+                                    userPhoto:res_user[0].userPhoto,
+                                    date1:ress[i].date1,
+                                    date2:ress[i].date2,
+                                    desc:ress[i].desc,
+                                    likeNums:ress[i].likeNums,
+                                    picArr:ress[i].picArr,
+                                    publishdate:ress[i].publishdate,
+                                    region:ress[i].region,
+                                    remark:ress[i].remark,
+                                    replyNums:ress[i].replyNums,
+                                    userId:ress[i].userId,
+                                    _id:ress[i]._id,
+                                    companyName:ress[i].companyName
+                                }
+                                articles.push(data)
+                                    if(total==ress.length){
+                                        var sortObj = articles.sort(comparef("publishdate"));
+                                        return res.json(toJSON(sortObj, '成功', '200', '0'))
+                                    }
+                                    total++
+                            }
+                        })
+
+                    }
+                   /* console.log("找到了")
+                    return res.json(toJSON(ress, '成功', '200', '0'))*/
                 } else {
                     console.log('没找到')
                     return res.json(toJSON({}, '用户名或密码错误', '-1', '1'))
+                }
+            }
+        })
+    })
+})
+// 获取具体文章
+app.post('/getArticle',function (req,res) {
+    var alldata = '';
+    req.on('data', function (chunk) {
+        alldata += chunk;
+    })
+    req.on('end', function () {
+        var jsonAlldata = JSON.parse(alldata)
+        var wherestr = {'_id': jsonAlldata.aid};
+        Article.find(wherestr, function (err, ress) {
+            if (err) {
+                console.log("Error:" + err);
+            }
+            else {
+                if (ress != '') {
+                    console.log("找到文章了")
+                    return res.json(toJSON(ress[0], '成功', '200', '0'))
+                } else {
+                    console.log('没找到')
+                    return res.json(toJSON({}, '文章不存在', '-1', '1'))
+                }
+            }
+        })
+    })
+})
+// 文章回复数量统计
+app.post('/addReplyNum',function (req,res) {
+    var alldata = '';
+    req.on('data', function (chunk) {
+        alldata += chunk;
+    })
+    req.on('end', function(){
+        var jsonAlldata = JSON.parse(alldata)
+        var findArticle={'_id':jsonAlldata.aid}
+        Article.find(findArticle, function (err, ress) {
+            if (err) {
+                console.log("Error:" + err);
+            }
+            else {
+                console.log("返回", ress)
+                if (ress != '') {
+                    var replyNums=ress[0].replyNums+1;
+                    Article.update({'_id': jsonAlldata.aid}, {'replyNums': replyNums}, function (err, resss) {
+                        if (err) {
+                            console.log("Error:" + err);
+                        }
+                        else {
+                            return res.json(toJSON({}, '回复成功', '200', '0'))
+                        }
+                    })
+
+                } else {
+                    console.log('没找到')
+                    return res.json(toJSON({}, 'token错误', '-1', '1'))
+                }
+            }
+        })
+    })
+})
+// 文章点赞
+app.post('/addLike',function (req,res) {
+    var alldata = '';
+    req.on('data', function (chunk) {
+        alldata += chunk;
+    })
+    req.on('end', function(){
+        var jsonAlldata = JSON.parse(alldata)
+        var findArticle={'_id':jsonAlldata.aid}
+        Article.find(findArticle, function (err, ress) {
+            if (err) {
+                console.log("Error:" + err);
+            }
+            else {
+                console.log("返回", ress)
+                if (ress != '') {
+                    var likeNums=ress[0].likeNums+1;
+                    console.log("数量",ress[0].likeNums,likeNums)
+                    Article.update({'_id': jsonAlldata.aid}, {'likeNums': likeNums}, function (err, resss) {
+                        if (err) {
+                            console.log("Error:" + err);
+                        }
+                        else {
+                            return res.json(toJSON({}, '点赞成功', '200', '0'))
+                        }
+                    })
+
+                } else {
+                    console.log('没找到')
+                    return res.json(toJSON({}, 'token错误', '-1', '1'))
+                }
+            }
+        })
+    })
+})
+// 根据文章id获取评论
+app.post('/getComments',function (req,res) {
+    var alldata = '';
+    req.on('data', function (chunk) {
+        alldata += chunk;
+    })
+    req.on('end', function () {
+        var jsonAlldata = JSON.parse(alldata)
+        var wherestr = {'aid': jsonAlldata.aid};
+        console.log(jsonAlldata.aid)
+        Comments.find(wherestr).sort({'create_time':1}).exec(function (err, ress) {
+            if (err) {
+                console.log("Error:" + err);
+            }
+            else {
+                if (ress != '') {
+                    console.log("找到评论了",ress)
+                    /*var data=[{name:'wuhao',commentdate:'2017-10-10',tetx:'dswdwd',subComment:[{name:'',commentdata:'2016',text:'23232'}]}]*/
+                    var comments=[]
+                    /*ress.forEach(function (v,i,a) {*/
+                    var total=1
+                    for(let i=0;i<ress.length;i++){
+                        if(ress[i].sub_re_cid!='0'){
+                            console.log("ghjhgjhjkhjkh")
+                            console.log(ress[i].sub_re_uid)
+                            var findUser={'$or':[{'_id':ress[i].uid},{'_id':ress[i].sub_re_uid}]}
+                           /* User.find(findUser, function (err, res_user) {
+                                if (err) {
+                                    console.log("Error:" + err);
+                                }
+                                else {
+                                    if (res_user != '' ) {
+                                        console.log("找到了2")
+                                        console.log("res_user",res_user)
+
+                                        var data={
+                                            uid:res_user[0]._id,
+                                            name:res_user[0].username,
+                                            userPhoto:res_user[0].userPhoto,
+                                            commentdate:ress[i].create_time,
+                                            aid:ress[i].aid,
+                                            content:ress[i].content,
+                                            cid:ress[i]._id,
+                                            re_cid:ress[i].re_cid,
+                                            sub_re_cid:ress[i].sub_re_cid,
+                                            sub_re_name:res_user[1].username
+                                        }
+                                        comments.push(data)
+                                        if(total==ress.length){
+                                            /!* console.log(comments)*!/
+                                            var sortObj = comments.sort(compare("commentdate"));
+                                            return res.json(toJSON(sortObj, '成功', '200', '0'))
+                                        }
+                                        total++
+                                    } else {
+                                        console.log('没找到')
+                                        /!* return res.json(toJSON({}, '无此用户', '-1', '1'))*!/
+                                    }
+                                }
+                            })*/
+                        }else {
+                            var findUser={'_id':ress[i].uid}
+
+                        }
+                        User.find(findUser, function (err, res_user) {
+                            if (err) {
+                                console.log("Error:" + err);
+                            }
+                            else {
+                                if (res_user != '' ) {
+                                    console.log("找到了")
+                                    console.log("res_user",res_user)
+                                    if(res_user[0]._id!=ress[i].uid&&res_user[1]){
+                                        var temp=res_user[0];
+                                        res_user[0]=res_user[1];
+                                        res_user[1]=temp
+                                    }
+                                    var sub_re_name=''
+                                    try {
+                                        sub_re_name=res_user[1].username
+                                    }catch(err) {}
+                                    var data={
+                                        uid:res_user[0]._id,
+                                        name:res_user[0].username,
+                                        userPhoto:res_user[0].userPhoto,
+                                        commentdate:ress[i].create_time,
+                                        aid:ress[i].aid,
+                                        content:ress[i].content,
+                                        cid:ress[i]._id,
+                                        re_cid:ress[i].re_cid,
+                                        sub_re_cid:ress[i].sub_re_cid,
+                                        sub_re_name:sub_re_name
+                                    }
+                                    comments.push(data)
+                                    if(total==ress.length){
+                                        /* console.log(comments)*/
+                                        var sortObj = comments.sort(compare("commentdate"));
+                                        return res.json(toJSON(sortObj, '成功', '200', '0'))
+                                    }
+                                    total++
+                                } else {
+                                    console.log('没找到')
+                                    /* return res.json(toJSON({}, '无此用户', '-1', '1'))*/
+                                }
+                            }
+                        })
+
+                    }
+
+                } else {
+                    console.log('没找到')
+                    return res.json(toJSON({}, '文章不存在', '-1', '1'))
                 }
             }
         })
@@ -496,49 +739,58 @@ app.post('/z_reply', function (req, res) {
         var jsonAlldata = JSON.parse(alldata)
         console.log(jsonAlldata)
         var newReply = {
-            name: jsonAlldata.userName,
-            userPhoto: jsonAlldata.userPhoto,
-            text: jsonAlldata.text,
-            commentdate: new Date(),
-            subComment: []
+            uid: jsonAlldata.uid,
+            aid: jsonAlldata.aid,
+            content: jsonAlldata.content,
+            create_time: new Date(),
+            re_cid: jsonAlldata.re_cid,
+            sub_re_cid:jsonAlldata.sub_re_cid,
+            sub_re_uid:jsonAlldata.sub_re_uid
         }
-        var wherestr = {'_id': jsonAlldata.articleId};
-        Article.find(wherestr, function (err, ress) {
+        console.log(typeof newReply.uid)
+        var comment = new Comments(newReply)
+        comment.save(function (err, ress) {
             if (err) {
-                console.log("Error:" + err);
-            }
-            else {
-                console.log("返回", ress)
-                if (ress != '') {
-                    console.log("找到了")
-                    Article.update({'_id': jsonAlldata.articleId}, {$push: {comments: newReply}}, function (err, resss) {
-                        if (err) {
-                            console.log("Error:" + err);
-                        }
-                        else {
-                            console.log("Res:" + resss);
-                            console.log("更新成功")
-                            Article.find(wherestr, function (err, finnal) {
-                                if (err) {
-                                    console.log("错误")
-                                } else {
-                                    var data = {
-                                        all: finnal,
-                                        thisArticle: newReply
-                                    }
-                                    return res.json(toJSON(data, '回复成功', '200', '0'))
-                                }
-                            })
+                console.log("Error")
+            } else {
+                console.log("comment保存成功",ress)
+                var ress=ress;
+                var wherestr = {'_id': ress.uid};
+                User.find(wherestr, function (err, resss) {
+                    if (err) {
+                        console.log("Error:" + err);
+                    }
+                    else {
+                        if (resss != '') {
+                          /*  console.log("找到用户",resss)
+                            ress.userPhoto=resss[0].userPhoto;
+                            ress.username=resss[0].username;*/
+                            var data={
+                                aid:jsonAlldata.aid,
+                                cid:ress._id,
+                                commentdate:ress.create_time,
+                                content:ress.content,
+                                name:resss[0].username,
+                                re_cid:'0',
+                                sub_re_cid:'0',
+                                sub_re_name:'',
+                                uid:resss[0]._id,
+                                userPhoto:resss[0].userPhoto,
+                                subComments:[]
+                            }
+                            console.log("组合之后",data)
+                            return res.json(toJSON(data, '成功', '200', '0'))
+
+                        } else {
+                           console.log("无此用户")
 
                         }
-                    })
+                    }
+                })
 
-                } else {
-                    console.log('没找到')
-                    return res.json(toJSON({}, 'token错误', '-1', '1'))
-                }
             }
         })
+
         /*var data=[{name:'wuhao',commentdate:'2017-10-10',tetx:'dswdwd',subComment:[{name:'',commentdata:'2016',text:'23232'}]}]*/
     })
 })
@@ -550,51 +802,66 @@ app.post('/s_reply', function (req, res) {
     })
     req.on('end', function () {
         var jsonAlldata = JSON.parse(alldata)
-        console.log(jsonAlldata)
-        var index = jsonAlldata.index;
         var newReply = {
-            name: jsonAlldata.userName,
-            userPhoto: jsonAlldata.userPhoto,
-            text: jsonAlldata.text,
-            commentdate: new Date()
+            uid: jsonAlldata.uid,
+            aid: jsonAlldata.aid,
+            content: jsonAlldata.content,
+            create_time: new Date(),
+            re_cid: jsonAlldata.re_cid,
+            sub_re_cid:jsonAlldata.sub_re_cid,
+            sub_re_uid:jsonAlldata.sub_re_uid
         }
-        var wherestr = {'_id': jsonAlldata.articleId};
-        Article.find(wherestr, function (err, ress) {
+        var comment = new Comments(newReply)
+        comment.save(function (err, ress) {
             if (err) {
-                console.log("Error:" + err);
-            }
-            else {
-                console.log("返回", ress)
-                if (ress != '') {
-                    ress[0].comments[index].subComment.push(newReply)
-                    /*console.log("新",ress[0].comments[index])
-                     console.log("找到了")*/
-                    Article.update({'_id': jsonAlldata.articleId}, {comments: ress[0].comments}, function (err, resss) {
-                        if (err) {
-                            console.log("Error:" + err);
-                        }
-                        else {
-                            console.log("Res:" + resss);
-                            console.log("更新成功")
-                            Article.find(wherestr, function (err, finnal) {
-                                if (err) {
-                                    console.log("错误")
-                                } else {
-                                    var data = {
-                                        all: finnal,
-                                        thisArticle: newReply
-                                    }
-                                    return res.json(toJSON(data, '回复成功', '200', '0'))
-                                }
-                            })
-
-                        }
-                    })
-
-                } else {
-                    console.log('没找到')
-                    return res.json(toJSON({}, 'token错误', '-1', '1'))
+                console.log("Error")
+            } else {
+                console.log("comment保存成功",ress)
+                var ress=ress;
+                console.log("ssssss",ress)
+                if(jsonAlldata.sub_re_cid!='0'){
+                    var wherestr={'$or':[{'_id':ress.uid},{'_id':ress.sub_re_uid}]}
+                }else {
+                    var wherestr={'_id':ress.uid}
                 }
+                User.find(wherestr, function (err, resss) {
+                    if (err) {
+                        console.log("Error:" + err);
+                    }
+                    else {
+                        if (resss != '') {
+                            if(resss[0]._id!=ress.uid){
+                                var temp=resss[0];
+                                resss[0]=resss[1];
+                                resss[1]=temp
+                            }
+                            var sub_re_name=''
+                            try {
+                                sub_re_name=resss[1].username
+                            }catch(err) {}
+                            var data={
+                                aid:jsonAlldata.aid,
+                                cid:ress._id,
+                                commentdate:ress.create_time,
+                                content:ress.content,
+                                name:resss[0].username,
+                                re_cid:jsonAlldata.re_cid,
+                                sub_re_cid:jsonAlldata.sub_re_cid,
+                                sub_re_name:sub_re_name,
+                                uid:resss[0]._id,
+                                userPhoto:resss[0].userPhoto,
+                                subComments:[]
+                            }
+                            console.log("组合之后",data)
+                            return res.json(toJSON(data, '成功', '200', '0'))
+
+                        } else {
+                            console.log("无此用户")
+
+                        }
+                    }
+                })
+
             }
         })
         /*var data=[{name:'wuhao',commentdate:'2017-10-10',tetx:'dswdwd',subComment:[{name:'',commentdata:'2016',text:'23232'}]}]*/
