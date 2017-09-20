@@ -24,6 +24,9 @@ app.all('*', function (req, res, next) {
 function toJSON(data = {}, message = '', status = '', code = '') {
     return {data, message, status, code}
 }
+function toJSON(data = {}, message = '', status = '', code = '',count) {
+    return {data, message, status, code,count}
+}
 function copyFile(oldPath,newPath){
     console.log('--------开始读取文件--------');
     fs.readFile(oldPath, function(err, data) {
@@ -280,63 +283,99 @@ app.post('/getArticleList', function (req, res) {
         alldata += chunk;
     })
     req.on('end', function () {
-        var pageSize = 5;                   //一页多少条
-        var currentPage = 1;                //当前第几页
+        var jsonAlldata = JSON.parse(alldata)
+        var pageSize = jsonAlldata.pageSize;                   //一页多少条
+        var currentPage = jsonAlldata.currentPage;                //当前第几页
         var sort = {'publishdate': -1};        //排序（按登录时间倒序）
         var condition = {};                 //条件
         var skipnum = (currentPage - 1) * pageSize;   //跳过数
-        Article.find(condition).skip(skipnum).limit(pageSize).sort(sort).exec(function (err, ress) {
+        var count=0
+        Article.count({ }, function (err, count) {
+            if (err){
+            }else{
+                count=count;
+                Article.find(condition).skip(skipnum).limit(pageSize).sort(sort).exec(function (err, ress) {
+                    if (err) {
+                        console.log("Error:" + err);
+                    }
+                    else {
+                        var ress=ress;
+                        if (ress != '') {
+                            var total=1
+                            var articles=[];
+                            for(let i=0;i<ress.length;i++){
+                                var findUser={'_id':ress[i].userId}
+                                User.find(findUser, function (err, res_user) {
+                                    if (err) {
+                                        console.log("Error:" + err);
+                                    }
+                                    else {
+
+                                        var data={
+                                            address:ress[i].address,
+                                            author:ress[i].username,
+                                            userPhoto:res_user[0].userPhoto,
+                                            date1:ress[i].date1,
+                                            date2:ress[i].date2,
+                                            desc:ress[i].desc,
+                                            likeNums:ress[i].likeNums,
+                                            picArr:ress[i].picArr,
+                                            publishdate:ress[i].publishdate,
+                                            region:ress[i].region,
+                                            remark:ress[i].remark,
+                                            replyNums:ress[i].replyNums,
+                                            userId:ress[i].userId,
+                                            _id:ress[i]._id,
+                                            companyName:ress[i].companyName,
+                                        }
+                                        articles.push(data)
+                                        if(total==ress.length){
+                                            var sortObj = articles.sort(comparef("publishdate"));
+                                            return res.json(toJSON(sortObj, '成功', '200', '0',count))
+                                        }
+                                        total++
+                                    }
+                                })
+
+                            }
+                            /* console.log("找到了")
+                             return res.json(toJSON(ress, '成功', '200', '0'))*/
+                        } else {
+                            console.log('没找到')
+                            return res.json(toJSON({}, '用户名或密码错误', '-1', '1'))
+                        }
+                    }
+                })
+            }
+
+        });
+
+    })
+})
+// 获取文章搜索列表
+app.post('/articleSearchList', function (req, res) {
+    var alldata = '';
+    req.on('data', function (chunk) {
+        alldata += chunk;
+    })
+    req.on('end', function () {
+        var jsonAlldata = JSON.parse(alldata)
+        var companyName=jsonAlldata.queryParam
+        Article.find({'companyName':new RegExp(companyName)},function (err, ress) {
             if (err) {
                 console.log("Error:" + err);
             }
             else {
                 var ress=ress;
                 if (ress != '') {
-                    var total=1
-                    var articles=[];
-                    for(let i=0;i<ress.length;i++){
-                        var findUser={'_id':ress[i].userId}
-                        User.find(findUser, function (err, res_user) {
-                            if (err) {
-                                console.log("Error:" + err);
-                            }
-                            else {
-
-                                var data={
-                                    address:ress[i].address,
-                                    author:ress[i].username,
-                                    userPhoto:res_user[0].userPhoto,
-                                    date1:ress[i].date1,
-                                    date2:ress[i].date2,
-                                    desc:ress[i].desc,
-                                    likeNums:ress[i].likeNums,
-                                    picArr:ress[i].picArr,
-                                    publishdate:ress[i].publishdate,
-                                    region:ress[i].region,
-                                    remark:ress[i].remark,
-                                    replyNums:ress[i].replyNums,
-                                    userId:ress[i].userId,
-                                    _id:ress[i]._id,
-                                    companyName:ress[i].companyName
-                                }
-                                articles.push(data)
-                                    if(total==ress.length){
-                                        var sortObj = articles.sort(comparef("publishdate"));
-                                        return res.json(toJSON(sortObj, '成功', '200', '0'))
-                                    }
-                                    total++
-                            }
-                        })
-
-                    }
-                   /* console.log("找到了")
-                    return res.json(toJSON(ress, '成功', '200', '0'))*/
+                    return res.json(toJSON(ress, '成功', '200', '0'))
                 } else {
                     console.log('没找到')
-                    return res.json(toJSON({}, '用户名或密码错误', '-1', '1'))
+                    return res.json(toJSON({}, '无此公司', '-1', '1'))
                 }
             }
         })
+
     })
 })
 // 获取具体文章
